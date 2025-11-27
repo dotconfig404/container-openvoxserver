@@ -225,6 +225,12 @@ RUN sed -i 's/^ *USER="puppet"/USER=""/' /etc/default/puppetserver
 # reasons. this won't work because after creating a link ruby tries to call chown
 RUN sed -i '/Puppetserver::Ca::Utils::Config\.symlink_to_old_cadir/ s/^/# /' \
   /usr/lib/ruby/gems/3.4.0/gems/openvoxserver-ca-3.0.0/lib/puppetserver/ca/action/setup.rb
+RUN sed -i '/def self\.harmonize_ownership/a\  return unless Puppet.settings[:manage_internal_file_permissions]' \
+  /usr/lib/ruby/gems/3.4.0/gems/openvox-8.21.1/lib/puppet/module_tool/applications/unpacker.rb
+# running puppet module install will fail due to it trying to call chown: comment out the line
+RUN sed -i 's/^\(.*Unpacker\.harmonize_ownership.*\)$/# \1/' /usr/lib/ruby/gems/3.4.0/gems/openvox-8.21.1/lib/puppet/forge.rb\
+&& sed -i 's/^\(.*Unpacker\.harmonize_ownership.*\)$/# \1/' /usr/lib/ruby/gems/3.4.0/gems/openvox-8.21.1/lib/puppet/module_tool/local_tarball.rb
+
 
 USER puppet:0
 
